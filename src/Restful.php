@@ -8,21 +8,16 @@ use Vipkwd\OAuth\OAuth as VKOauth;
 
 class Restful
 {
-    static function get(string $service, int $resourceId, array $data = [])
+    public static function __callStatic(string $method, array $arguments)
     {
-        return (new VKOauth([]))->resource('get', rtrim($service, '/') . '/' . $resourceId, $data);
-    }
+        $method = strtolower($method);
+        $arguments[0] = (string)($arguments[0]);
+        $arguments[1] = (int)($arguments[1] ?? 0);
+        $arguments[2] = (array)($arguments[2] ?? []);
 
-    static function put(string $service, int $resourceId, array $data = [])
-    {
-        return (new VKOauth([]))->resource('put', rtrim($service, '/') . '/' . $resourceId, $data);
-    }
-    static function post(string $service, int $resourceId, array $data = [])
-    {
-        return (new VKOauth([]))->resource('post', rtrim($service, '/') . '/' . $resourceId, $data);
-    }
-    static function delete(string $service, int $resourceId, array $data = [])
-    {
-        return (new VKOauth([]))->resource('delete', rtrim($service, '/') . '/' . $resourceId, $data);
+        if (in_array($method, ['post', 'delete', 'put', 'get'])) {
+            return (new VKOauth([]))->resource($method, rtrim($arguments[0], '/') . '/' . $arguments[1], $arguments[2]);
+        }
+        return null;
     }
 }
