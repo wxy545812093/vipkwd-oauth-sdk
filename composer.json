@@ -1,6 +1,7 @@
 {
 	"name": "vipkwd/oauth-sdk",
 	"description": "The SDK for VK-OAuth system.",
+	"version":"1.0.2",
 	"keywords": [
 		"sdk",
 		"oauth",

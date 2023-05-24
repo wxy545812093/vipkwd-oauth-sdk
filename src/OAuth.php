@@ -19,7 +19,7 @@ class OAuth
 
 	public function __construct(array $options)
 	{
-		$this->options = array([
+		$this->options = array_merge([
 			'client_id' => '',
 			'redirect_uri' => '',
 			'client_secret' => '',
@@ -28,7 +28,7 @@ class OAuth
 			'state' => 'xyz'
 		], $options);
 
-		$this->session = Session::instance();
+		// $this->session = Session::instance();
 	}
 
 	/**
@@ -149,7 +149,7 @@ class OAuth
 			$res['expires_time'] = time() + $res['expires_in'] - 5;
 			ksort($res);
 			// 将令牌缓存到 SESSION中，方便后续访问
-			$this->session->set($this->sessionKey, $res);
+			// $this->session->set($this->sessionKey, $res);
 		});
 	}
 

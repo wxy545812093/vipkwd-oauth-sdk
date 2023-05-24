@@ -45,7 +45,7 @@ $url = $OAuthInstance->getWebAuthorizeUrl() :String;
 $res = $OAuthInstance->callback():array|void;
 ```
 
-> If `$res` type is array, it is the token block(you can use `$OAuthInstance->getTokenInfo` to get it too). 
+> If `$res` type is array, it is the token block. 
 > if `$res` is other type, indicating that it has an error, you can use `$OAuthInstance->except` to get the error message.
 
 ### 4. CURD with RESTful ...
