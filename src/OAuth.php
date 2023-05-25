@@ -11,11 +11,10 @@ use \Exception;
 class OAuth
 {
 	private $options = [];
-	private $session;
 	private $except = [];
 	private $server = 'http://oauth.hosts.run';
 	private $version = 'v1';
-	private $sessionKey = 'vk-oauth';
+	private $tokenData = [];
 
 	public function __construct(array $options)
 	{
@@ -27,8 +26,6 @@ class OAuth
 			'scope' => 'basic',
 			'state' => 'xyz'
 		], $options);
-
-		// $this->session = Session::instance();
 	}
 
 	/**
@@ -103,14 +100,22 @@ class OAuth
 	 */
 	public function getTokenInfo(): array
 	{
-		return $this->session->get($this->sessionKey);
+		return $this->tokenData;
 	}
 
-	public function resource($method = 'get', string $service, $data = [])
+	/**
+	 * @param string $method [get|post|put|delete]
+	 * @param string $service 服务资源名称
+	 * @param string|integer $resourceId <''>
+	 * @param array $data 附加请求数据
+	 * 
+	 * @param null|array
+	 * 
+	 */
+	public function resource($method = 'get', string $service, $resourceId = '', array $data = [])
 	{
-		$tokenInfo = $this->getTokenInfo();
-		$url = rtrim($this->server, '/') . '/' . rtrim($this->version, '/') . '/oauth/resource?access_token=' . ($tokenInfo['access_token'] ?? '');
-		$header = ['service' => sprintf(trim($service, '/') . '/%s.json', $method)];
+		$url = rtrim($this->server, '/') . '/' . rtrim($this->version, '/') . '/oauth/resource?access_token=' . ($this->tokenData['access_token'] ?? '');
+		$header = ['service' => sprintf(trim($service, '/') . '/%s/%s.json', $resourceId, strtolower($method))];
 
 		switch (strtoupper($method)) {
 			case "POST":
@@ -148,8 +153,7 @@ class OAuth
 		return $this->exceptionHandler($response, function (&$res) {
 			$res['expires_time'] = time() + $res['expires_in'] - 5;
 			ksort($res);
-			// 将令牌缓存到 SESSION中，方便后续访问
-			// $this->session->set($this->sessionKey, $res);
+			$this->tokenData = $res;
 		});
 	}
 
