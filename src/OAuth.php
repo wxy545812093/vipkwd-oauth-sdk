@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Vipkwd\OAuth;
 
-use Vipkwd\OAuth\Dependents\Session;
+// use Vipkwd\OAuth\Dependents\Session;
 use Vipkwd\OAuth\Dependents\Http;
 use \Exception;
 
@@ -12,8 +12,9 @@ class OAuth
 {
 	private $options = [];
 	private $except = [];
-	private $server = 'http://oauth.hosts.run';
-	private $version = 'v1';
+	private $oauthVersion = 'v1';
+	private $oauthServerDomain = 'http://oauth.hosts.run';
+	private $apiServerDomain = 'http://api.hosts.run';
 	private $tokenData = [];
 
 	public function __construct(array $options)
@@ -43,8 +44,8 @@ class OAuth
 			return $value ? $value : (isset($this->options[$mapKey]) ? $this->options[$mapKey] : '');
 		};
 		return implode('/', [
-			$this->server,
-			$this->version,
+			$this->oauthServerDomain,
+			$this->oauthVersion,
 			sprintf(
 				'oauth/authorize?client_id=%s&response_type=%s&scope=%s&state=%s&redirect_uri=%s',
 				$param(null, 'client_id'),
@@ -72,7 +73,7 @@ class OAuth
 	 */
 	public function callback()
 	{
-		if (isset($_GET['code']) && isset($_GET['state']) && $_SERVER['REQUEST_URI'] && (strripos($_SERVER['HTTP_REFERER'] ?? null, $this->server) !== false)) {
+		if (isset($_GET['code']) && isset($_GET['state']) && $_SERVER['REQUEST_URI'] && (strripos($_SERVER['HTTP_REFERER'] ?? null, $this->oauthServerDomain) !== false)) {
 			//将认证服务器返回的授权码从 URL 中解析出来
 			$authorizationCode = substr($_SERVER['REQUEST_URI'], strpos($_SERVER['REQUEST_URI'], 'code=') + 5, 40);
 
@@ -112,11 +113,10 @@ class OAuth
 	 * @param null|array
 	 * 
 	 */
-	public function resource($method = 'get', string $service, $resourceId = '', array $data = [])
+	public function resource(string $api, $method = 'get', array $data = [])
 	{
-		$url = rtrim($this->server, '/') . '/' . rtrim($this->version, '/') . '/oauth/resource?access_token=' . ($this->tokenData['access_token'] ?? '');
-		$header = ['service' => sprintf(trim($service, '/') . '/%s/%s.json', $resourceId, strtolower($method))];
-
+		$url = rtrim($this->apiServerDomain, '/') . '/' . trim($api, '/') . '?access_token=' . ($this->tokenData['access_token'] ?? '');
+		$header = ['service' => sprintf('%s ' . trim($api, '/'), strtolower($method))];
 		switch (strtoupper($method)) {
 			case "POST":
 				return Http::post($url, $data, 'json', $header);
@@ -127,7 +127,9 @@ class OAuth
 			case "GET":
 				return Http::get($url, $data, $header);
 			case "OPTIONS":
-				return Http::get($url, $data, $header);
+				return Http::options($url, $data, 'json', $header);
+			case "PATCH":
+				return Http::patch($url, $data, 'json', $header);
 		}
 		return null;
 	}
@@ -143,7 +145,7 @@ class OAuth
 	private function oAuthToken(string $authorize_code): array
 	{
 		// 步骤4 拿授权码去申请令牌
-		$response = Http::post(rtrim($this->server, '/') . '/' . rtrim($this->version, '/') . '/oauth/token', http_build_query([
+		$response = Http::post(rtrim($this->oauthServerDomain, '/') . '/' . rtrim($this->oauthVersion, '/') . '/oauth/token', http_build_query([
 			'grant_type' => 'authorization_code',
 			'code' => $authorize_code,
 			'redirect_uri' => $this->options['redirect_uri'],

@@ -12,11 +12,11 @@ class Restful
     {
         $method = strtolower($method);
         $arguments[0] = (string)($arguments[0]);
-        $arguments[1] = (int)($arguments[1] ?? 0);
-        $arguments[2] = (array)($arguments[2] ?? []);
+        $arguments[1] = (array)($arguments[1] ?? []);
+        // $arguments[2] = (array)($arguments[2] ?? []);
 
-        if (in_array($method, ['post', 'delete', 'put', 'get'])) {
-            return (new VKOauth([]))->resource($method, rtrim($arguments[0], '/') . '/' . $arguments[1], $arguments[2]);
+        if (in_array($method, ['post', 'delete', 'put', 'get', 'options','patch'])) {
+            return (new VKOauth([]))->resource(rtrim($arguments[0], '/'), $method, $arguments[1]);
         }
         return null;
     }

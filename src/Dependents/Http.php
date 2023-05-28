@@ -98,6 +98,22 @@ class Http
         self::$timeout = 3;
         return self::__request('patch', $url, $param, $type, $header, $rInfo);
     }
+    /**
+     * Options 请求
+     *
+     * @param string $url URL地址
+     * @param string|array $param <""> 发送参数
+     * @param string $type <form> 设定发送的数据类型 [form|json]
+     * @param array $header 请求头 <[]>
+     * @param bool $rInfo 是否返回curlInfo
+     *
+     * @return mixed
+     */
+    static function options(string $url, $param = [], string $type = 'form', array $header = [], bool $rInfo = false)
+    {
+        self::$timeout = 3;
+        return self::__request('options', $url, $param, $type, $header, $rInfo);
+    }
 
     /**
      * CURL测试链接连通性
